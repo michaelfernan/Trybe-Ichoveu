@@ -35,3 +35,23 @@ export const getWeatherByCity = async (cityURL) => {
     return null;
   }
 };
+
+export const get7DayForecast = async (cityURL) => {
+  try {
+    const response = await fetch(`http://api.weatherapi.com/v1/forecast.json?lang=pt&key=${TOKEN}&q=${cityURL}&days=7`);
+    const data = await response.json();
+
+    const forecastData = data.forecast.forecastday.map((forecast) => ({
+      date: forecast.date,
+      maxTemp: forecast.day.maxtemp_c,
+      minTemp: forecast.day.mintemp_c,
+      condition: forecast.day.condition.text,
+      icon: forecast.day.condition.icon,
+    }));
+
+    return forecastData;
+  } catch (error) {
+    console.error('Erro ao obter a previsão do tempo:', error);
+    return [];
+  }
+};

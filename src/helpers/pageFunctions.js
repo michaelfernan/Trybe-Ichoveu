@@ -1,4 +1,4 @@
-import { searchCities, getWeatherByCity } from './weatherAPI';
+import { searchCities, getWeatherByCity, get7DayForecast } from './weatherAPI';
 
 /**
  * Cria um elemento HTML com as informações passadas
@@ -77,7 +77,7 @@ export function showForecast(forecastList) {
  * Recebe um objeto com as informações de uma cidade e retorna um elemento HTML
  */
 export function createCityElement(cityInfo) {
-  const { name, country, temp, condition, icon /* , url */ } = cityInfo;
+  const { name, country, temp, condition, icon, url } = cityInfo;
 
   const cityElement = createElement('li', 'city');
 
@@ -101,8 +101,16 @@ export function createCityElement(cityInfo) {
   infoContainer.appendChild(tempContainer);
   infoContainer.appendChild(iconElement);
 
+  // Crie o botão "Ver previsão"
+  const forecastButton = createElement('button', 'forecast-button', 'Ver previsão');
+  forecastButton.addEventListener('click', async () => {
+    const forecastData = await get7DayForecast(url);
+    showForecast(forecastData);
+  });
+
   cityElement.appendChild(headingElement);
   cityElement.appendChild(infoContainer);
+  cityElement.appendChild(forecastButton);
 
   return cityElement;
 }
@@ -116,13 +124,30 @@ export async function handleSearch(event) {
 
   const searchInput = document.getElementById('search-input');
   const searchValue = searchInput.value;
-  const cities = await searchCities(searchValue); // Aguarda a busca por cidades
+  const cities = await searchCities(searchValue);
 
   if (cities.length === 0) {
     window.alert('Nenhuma cidade encontrada');
     return;
   }
 
-  const weatherPromises = cities.map((city) => getWeatherByCity(city.url)); // Requisita o tempo atual para cada cidade
+  const weatherPromises = cities.map((city) => getWeatherByCity(city.url));
   const weatherDataArray = await Promise.all(weatherPromises);
+
+  const citiesList = document.getElementById('cities'); // O elemento <ul id="cities">
+
+  weatherDataArray.forEach((weatherData, index) => {
+    if (weatherData) {
+      const cityInfo = {
+        name: cities[index].name,
+        country: cities[index].country,
+        temp: weatherData.temp,
+        condition: weatherData.condition,
+        icon: weatherData.icon,
+        url: cities[index].url,
+      };
+      const cityElement = createCityElement(cityInfo);
+      citiesList.appendChild(cityElement);
+    }
+  });
 }
