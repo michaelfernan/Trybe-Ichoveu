@@ -1,6 +1,6 @@
 // Remova os comentários a medida que for implementando as funções
-//
-const TOKEN = 'cedc300c832d4550b09124423230908';
+const TOKEN = import.meta.env.VITE_TOKEN;
+// const TOKEN = 'cedc300c832d4550b09124423230908';
 
 export const searchCities = async (term) => {
   try {
